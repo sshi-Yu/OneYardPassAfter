@@ -4,13 +4,32 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var { verify_token } = require('./jwt/index');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var adminRouter = require('./routes/admin')
+var adminRouter = require('./routes/admin');
+var portRouter = require('./routes/port');
 
 var app = express();
 
-var db = require('./db/connect')
+var db = require('./db/connect');
+
+/* 设置白名单 */
+const whiteList = ['/user/login', '/user/regist', '/admin/login', '/admin'];
+
+// 验证token
+app.use((req, res, next) => {
+    if(!whiteList.includes(req.url)){// 非白名单验证
+        verify_token(req.query.accessToken).then(res => next())
+        .catch(e => res.json({
+            code: '4001',
+            data: 'Invalid Token'
+        }))
+    }else{// 白名单跳过
+      next();
+    }
+})
 
 
 // view engine setup
@@ -24,8 +43,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 app.use('/admin', adminRouter);
+app.use('/port', portRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

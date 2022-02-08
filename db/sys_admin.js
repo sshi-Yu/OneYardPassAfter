@@ -9,9 +9,9 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: [true, 'admin_account is required'],
     },
-    admin_passwprd: {
+    admin_password: {
         type: String,
-        required: [true, 'admin_passwprd is required'],
+        required: [true, 'admin_password is required'],
     },
     admin_avatar: {
         type: String,
@@ -39,7 +39,7 @@ const adminSchema = new mongoose.Schema({
     },
 })
 
-const admin_model = mongoose.model('opt_admin', adminSchema)
+const admin_model = mongoose.model('sys_admin', adminSchema)
 
 module.exports = {
     admin_model
