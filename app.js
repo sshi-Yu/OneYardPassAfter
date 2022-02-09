@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var adminRouter = require('./routes/admin');
 var portRouter = require('./routes/port');
+var subscribeRouter = require('./routes/subscribe');
 
 var app = express();
 
@@ -21,7 +22,7 @@ const whiteList = ['/user/login', '/user/regist', '/admin/login', '/admin'];
 // 验证token
 app.use((req, res, next) => {
     if(!whiteList.includes(req.url)){// 非白名单验证
-        verify_token(req.query.accessToken).then(res => next())
+        verify_token(req.headers.accesstoken).then(res => next())
         .catch(e => res.json({
             code: '4001',
             data: 'Invalid Token'
@@ -46,6 +47,7 @@ app.use('/', indexRouter);
 app.use('/user', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/port', portRouter);
+app.use('/subscribe', subscribeRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

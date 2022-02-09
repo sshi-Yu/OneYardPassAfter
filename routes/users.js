@@ -25,17 +25,23 @@ router.post('/login', (req, res, next) => {
           docs.length < 1 ? res.json({ // 账户不存在
               code: '0003',
               data: 'Account does not exist'
-            }) : docs[0].user_status == '1' ?// 查询账户状态 user_status 1为正常 0为已注销不可用
+            }) : docs[0].delete_flag == '1' ? // 查询账户状态 delete_flag 1为正常 0为已注销不可用
             docs[0].user_password === user_password ? res.json({ // 账户存在且密码比对成功
               code: '1111',
               data: {
                 msg: 'Login sucess',
-                accessToken: create_token(user_account) // 登录成功 生成token
+                accessToken: create_token(user_account), // 登录成功 生成token
+                userInfo: {
+                  user_name: docs[0].user_name,
+                  user_account: docs[0].user_account,
+                  user_avatar: docs[0].user_avatar,
+                  user_id: docs[0]._id
+                }
               }
             }) : res.json({ // 账户存在 密码比对不成功
               code: '1110',
               data: 'The account or password does not match'
-            }) : res.json({// 账户注销或不可用状态
+            }) : res.json({ // 账户注销或不可用状态
               code: '0404',
               data: 'Account closed'
             })
@@ -110,5 +116,32 @@ router.post('/regist', (req, res, next) => {
     })
   }
 })
+
+router.post('/refresh', (req, res, next) => {
+  const {
+    user_id
+  } = req.body
+  if (user_id) {
+    user_model.find({
+      _id: user_id
+    }).select('user_name user_account user_avatar').exec((err, docs) => {
+      if (!err) {
+        res.json({
+          code: '1111',
+          data: {
+            msg: 'userInfo refresh success',
+            userInfo: docs[0]
+          }
+        })
+      } else {
+        res.json({
+          code: '0000',
+          data: 'ERROR ' + err
+        })
+      }
+    })
+  }
+})
+
 
 module.exports = router;

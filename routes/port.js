@@ -4,12 +4,12 @@ const {
 } = require('../db/opt_port')
 
 /* Get portList */
-router.get('/portList', (req, res, next) => {
+router.get('/portAddressList', (req, res, next) => {
     const {
         transboundary_type,
     } = req.query
     if (transboundary_type) { // transboundary_type  1为出境 0为入境 
-        transboundary_type == 1 ? port_model.find().select('start_address end_address').exec((err, docs) => {// 查询起始地和目的地
+        transboundary_type == 1 ? port_model.find().select('start_address end_address port_name').exec((err, docs) => { // 查询起始地和目的地
             if (!err) {
                 res.json({
                     code: '1111',
@@ -21,12 +21,13 @@ router.get('/portList', (req, res, next) => {
                     data: 'ERROR ' + err
                 })
             }
-        }) : port_model.find().select('start_address end_address').exec((err, docs) => {// 查询起始地和目的地
+        }) : port_model.find().select('start_address end_address port_name').exec((err, docs) => { // 查询起始地和目的地
             if (!err) {
                 let addressList = [];
-                docs.forEach( i => {
-                    addressList.push({ // transboundary 为 0 则将从数据库中所拿到的起始地和目的地的数据 处理后 返回
-                        admin_id: i.admin_id,
+                docs.forEach(i => {
+                    addressList.push({
+                        _id: i._id,
+                        port_name: i.port_name,
                         start_address: i.end_address,
                         end_address: i.start_address
                     })
@@ -42,7 +43,7 @@ router.get('/portList', (req, res, next) => {
                 })
             }
         })
-    }else{
+    } else {
         res.json({
             code: '0001',
             data: 'transboundary_type is required'
