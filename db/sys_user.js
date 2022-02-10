@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
     create_time: {
         type: String,
         required: [false, 'create_time is required'],
-        default: +new Date()
+        default: new Date()
     },
     modifier: {
         type: String,
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
     modify_time: {
         type: String,
         required: [false, 'modify_time is required'],
-        default: +new Date()
+        default: new Date()
     },
     delete_flag: {
         type: String,

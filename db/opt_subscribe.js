@@ -65,7 +65,7 @@ const subscribeSchema = new mongoose.Schema({
     create_time: {
         type: String,
         required: [true, 'create_time is required'],
-        default: +new Date()
+        default: new Date()
     },
     modifier: {
         type: String,
@@ -74,7 +74,7 @@ const subscribeSchema = new mongoose.Schema({
     modify_time: {
         type: String,
         required: [true, 'modify_time is required'],
-        default: +new Date()
+        default: new Date()
     },
     deltete_flag: {
         type: String,

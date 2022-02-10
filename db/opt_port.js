@@ -34,7 +34,7 @@ const portSchema = new mongoose.Schema({
     create_time: {
         type: String,
         required: [true, 'create_time is required'],
-        default: +new Date()
+        default: new Date()
     },
     modifier: {
         type: String,
