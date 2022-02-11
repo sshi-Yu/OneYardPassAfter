@@ -35,7 +35,6 @@ router.post('/sub_subscribe', (req, res, next) => {
     user_model.find({
         _id: proposer_id
     }).select('user_status').exec((err, docs) => {
-        console.log(auditor_id)
         if (!err) {
             docs[0].user_status === '1' ? // 预约人id无误 且查询user——status 为 1 即 个人信息已完善 则正常保存预约信息
                 subscribe_model.insertMany({
@@ -162,7 +161,7 @@ router.get('/subscribeInfo', (req, res, next) => {
     } = req.query
     subscribe_model.find({
             _id: subscribe_id
-        }).select('proposer_id begin_time end_time goods_weight goods_type transboundary_type delete_flag')
+        }).select('proposer_id begin_time end_time goods_weight goods_type transboundary_type delete_flag remark')
         .exec((err, docs) => {
             if (!err) {
                 if (docs.length > 0) {
@@ -178,17 +177,32 @@ router.get('/subscribeInfo', (req, res, next) => {
                                 end_time: docs[0].end_time,
                                 goods_weight: docs[0].goods_weight,
                                 goods_type: docs[0].goods_type,
-                                transboundary_type: docs[0].transboundary_type
-                            }
+                                transboundary_type: docs[0].transboundary_type,
+                                remark: docs[0].remark,
+                            },
+                            passable: true
                         }
                     }) : res.json({// 不在指定时间段
                         code: '1002',
-                        data: 'Not within the specified time period',
+                        data: {
+                            msg: 'Not within the specified time period',
+                            subscribeInfo: {
+                                begin_time: docs[0].begin_time,
+                                end_time: docs[0].end_time,
+                                goods_weight: docs[0].goods_weight,
+                                goods_type: docs[0].goods_type,
+                                transboundary_type: docs[0].transboundary_type,
+                                remark: docs[0].remark,
+                            },
+                            passable: false
+                        }
                     })
                 } else {
                     res.json({
                         code: '0001',
-                        data: 'subscribe info not found'
+                        data: {
+                            msg: 'subscribe info not found',
+                        }
                     })
                 }
             } else {

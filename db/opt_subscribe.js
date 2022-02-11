@@ -56,7 +56,8 @@ const subscribeSchema = new mongoose.Schema({
     },
     remark: {// 备注 审核未通过原因
         type: String,
-        required: [false, 'remark is required']
+        required: [true, 'remark is required'],
+        default: ''
     },
     creator: {
         type: String,

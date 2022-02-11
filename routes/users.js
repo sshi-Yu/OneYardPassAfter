@@ -143,5 +143,6 @@ router.post('/refresh', (req, res, next) => {
   }
 })
 
+/* complete user information  */
 
 module.exports = router;
