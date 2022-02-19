@@ -21,7 +21,7 @@ router.post('/append', (req, res, next) => {
                         code: '1000',
                         data: 'Non-repeatable addition'
                     })
-                } else { // 若phone不想同 则表示此用户下并未绑定该phone号码 可正常添加
+                } else { // 若phone不相同 则表示此用户下并未绑定该phone号码 可正常添加
                     driver_model.insertMany({
                         driver_name,
                         case_number,
