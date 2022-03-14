@@ -14,6 +14,9 @@ const router = require('express').Router()
 const {
   create_token
 } = require('../jwt/index')
+const {
+  json
+} = require('express/lib/response')
 
 /* add admin */
 router.post('/', (req, res, next) => {
@@ -89,9 +92,9 @@ router.post('/login', (req, res, next) => {
               msg: 'Login sucess',
               accessToken: create_token(admin_account), // 登录成功 生成token
               adminInfo: {
-                admin_name: docs[0].user_name,
-                admin_account: docs[0].user_account,
-                admin_avatar: docs[0].user_avatar,
+                admin_name: docs[0].admin_name,
+                admin_account: docs[0].admin_account,
+                admin_avatar: docs[0].admin_avatar,
                 admin_id: docs[0]._id
               }
             }
@@ -123,10 +126,10 @@ router.post('/login', (req, res, next) => {
 /* get pending list */
 router.get('/pendingList', (req, res, next) => {
   const {
-    auditor_id
+    admin_id
   } = req.query
   subscribe_model.find({
-    auditor_id,
+    admin_id,
     subscribe_status: '1' // 查询 审核状态 为 1 即审核中 的数据
   }, (err, docs) => {
     if (!err) {
@@ -145,23 +148,36 @@ router.get('/pendingList', (req, res, next) => {
               }, (err, driver_docs) => {
                 if (!err) {
                   if (driver_docs.length == 0) {
-                    subscribe_item.putOnRecord = '1'
+                    subscribe_item.subscribe_id = i._id
+                    subscribe_item.putOnRecord = '0'
                     subscribe_item.user_name = docs[0].user_name
                     subscribe_item.user_phone = docs[0].user_account
                     subscribe_item.driver_name = i.driver_name
                     subscribe_item.driver_phone = i.phone
+                    subscribe_item.create_time = i.create_time
                     subscribe_item.begin_time = i.begin_time
                     subscribe_item.end_time = i.end_time
                     subscribe_item.goods_weight = i.goods_weight
                     subscribe_item.goods_type = i.goods_type
                     subscribe_item.transboundary_type = i.transboundary_type
                     data.push(subscribe_item)
+                    if (index == arr.length - 1) { //循环结束 响应
+                      res.json({
+                        code: '1111',
+                        data: {
+                          msg: 'check success',
+                          data
+                        }
+                      })
+                    }
                   } else {
-                    subscribe_item.putOnRecord = '0'
+                    subscribe_item.subscribe_id = i._id
+                    subscribe_item.putOnRecord = '1'
                     subscribe_item.user_name = docs[0].user_name
                     subscribe_item.user_phone = docs[0].user_account
                     subscribe_item.driver_name = i.driver_name
                     subscribe_item.driver_phone = i.phone
+                    subscribe_item.create_time = i.create_time
                     subscribe_item.begin_time = i.begin_time
                     subscribe_item.end_time = i.end_time
                     subscribe_item.goods_weight = i.goods_weight
@@ -194,6 +210,222 @@ router.get('/pendingList', (req, res, next) => {
       res.json({
         code: '0000',
         data: 'ERROR ' + err
+      })
+    }
+  })
+})
+
+/* get done list */
+router.get('/doneList', (req, res, next) => {
+  const {
+    admin_id
+  } = req.query
+  subscribe_model.find({
+    $where: () => admin_id === admin_id && subscribe_status !== '1' // 查询 审核状态 不为1 即不在审核中的数据
+  }, (err, docs) => {
+    if (!err) {
+      if (docs.length > 0) { // 正确查询到数据
+        let data = []
+        docs.forEach((i, index, arr) => { // 对查询到的所有数据进行循环
+          let subscribe_item = {}
+          // 使用预约人id proposer_id 到user表中查询预约人相关信息
+          user_model.find({
+            _id: i.proposer_id
+          }).select('user_name user_account').exec((err, docs) => {
+            if (!err) { // user表中查询 user_name user_account
+              driver_model.find({ // driver表中查询 查询到数据则已备案 --1  无数据则未备案 --0 
+                creator: i.proposer_id,
+                phone: i.phone
+              }, (err, driver_docs) => {
+                if (!err) {
+                  if (driver_docs.length == 0) {
+                    subscribe_item.subscribe_id = i._id
+                    subscribe_item.putOnRecord = '0'
+                    subscribe_item.user_name = docs[0].user_name
+                    subscribe_item.user_phone = docs[0].user_account
+                    subscribe_item.driver_name = i.driver_name
+                    subscribe_item.driver_phone = i.phone
+                    subscribe_item.create_time = i.create_time
+                    subscribe_item.begin_time = i.begin_time
+                    subscribe_item.end_time = i.end_time
+                    subscribe_item.subscribe_status = i.subscribe_status
+                    subscribe_item.goods_weight = i.goods_weight
+                    subscribe_item.goods_type = i.goods_type
+                    subscribe_item.transboundary_type = i.transboundary_type
+                    data.push(subscribe_item)
+                    if (index == arr.length - 1) { //循环结束 响应
+                      res.json({
+                        code: '1111',
+                        data: {
+                          msg: 'check success',
+                          data
+                        }
+                      })
+                    }
+                  } else {
+                    subscribe_item.subscribe_id = i._id
+                    subscribe_item.putOnRecord = '1'
+                    subscribe_item.user_name = docs[0].user_name
+                    subscribe_item.user_phone = docs[0].user_account
+                    subscribe_item.driver_name = i.driver_name
+                    subscribe_item.driver_phone = i.phone
+                    subscribe_item.create_time = i.create_time
+                    subscribe_item.begin_time = i.begin_time
+                    subscribe_item.end_time = i.end_time
+                    subscribe_item.subscribe_status = i.subscribe_status
+                    subscribe_item.goods_weight = i.goods_weight
+                    subscribe_item.goods_type = i.goods_type
+                    subscribe_item.transboundary_type = i.transboundary_type
+                    data.push(subscribe_item)
+                    if (index == arr.length - 1) { //循环结束 响应
+                      res.json({
+                        code: '1111',
+                        data: {
+                          msg: 'check success',
+                          data
+                        }
+                      })
+                    }
+                  }
+                }
+              })
+
+            }
+          })
+        })
+      } else { // 没有查询到数据
+        res.json({
+          code: '0001',
+          data: 'No Data'
+        })
+      }
+    } else {
+      res.json({
+        code: '0000',
+        data: 'ERROR ' + err
+      })
+    }
+  })
+})
+
+/* refresh adminInfo */
+router.post('/refresh', (req, res, next) => {
+  const {
+    admin_id
+  } = req.body
+  if (admin_id) {
+    admin_model.find({
+      _id: admin_id
+    }).select('admin_name admin_account admin_avatar').exec((err, docs) => {
+      if (!err) {
+        res.json({
+          code: '1111',
+          data: {
+            msg: 'adminInfo refresh success',
+            adminInfo: {
+              admin_name: docs[0].admin_name,
+              admin_account: docs[0].admin_account,
+              admin_avatar: docs[0].admin_avatar,
+              admin_id: docs[0]._id
+            }
+          }
+        })
+      } else {
+        res.json({
+          code: '0000',
+          data: 'ERROR ' + err
+        })
+      }
+    })
+  }
+})
+
+/* Reject */
+router.post('/reject', (req, res, next) => {
+  const {
+    remark,
+    subscribe_id
+  } = req.body
+  subscribe_model.updateOne({
+    _id: subscribe_id
+  }, {
+    $set: {
+      remark,
+      subscribe_status: '2' // 修改预约状态为2——即 预约失败
+    }
+  }, (err, docs) => {
+    if (!err) {
+      res.json({
+        code: '1111',
+        data: {
+          msg: 'The application was rejected'
+        }
+      })
+    } else {
+      res,
+      json({
+        code: '0000',
+        data: {
+          msg: 'ERROR' + err
+        }
+      })
+    }
+  })
+})
+
+/* Approve */
+router.post('/approve', (req, res, next) => {
+  const {
+    subscribe_id
+  } = req.body
+  subscribe_model.updateOne({
+    _id: subscribe_id
+  }, {
+    $set: {
+      remark: '已通过',
+      subscribe_status: '3' // 修改预约状态为3——即 预约成功
+    }
+  }, (err, docs) => {
+    if (!err) {
+      res.json({
+        code: '1111',
+        data: {
+          msg: 'The application was approved'
+        }
+      })
+    } else {
+      res,
+      json({
+        code: '0000',
+        data: {
+          msg: 'ERROR' + err
+        }
+      })
+    }
+  })
+})
+
+/* Delete subscribe item */
+router.get('/delete', (req, res, next) => {
+  const {
+    subscribe_id
+  } = req.query;
+  subscribe_model.deleteOne({
+    _id: subscribe_id
+  }, (err, docs) => {
+    if (!err) {
+      res.json({
+        code: '1111',
+        data: {
+          msg: 'Delete success'
+        }
+      })
+    } else {
+      res.json({
+        code: '0000',
+        data: {
+          msg: 'ERROR'+err
+        }
       })
     }
   })

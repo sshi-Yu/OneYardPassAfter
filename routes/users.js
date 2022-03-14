@@ -117,6 +117,7 @@ router.post('/regist', (req, res, next) => {
   }
 })
 
+/* refresh userInfo */
 router.post('/refresh', (req, res, next) => {
   const {
     user_id

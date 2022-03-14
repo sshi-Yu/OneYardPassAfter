@@ -18,7 +18,7 @@ var app = express();
 var db = require('./db/connect');
 
 /* 设置白名单 */
-const whiteList = ['/user/login', '/user/regist', '/admin/login', '/admin'];
+const whiteList = ['/user/login', '/user/regist', '/admin/login', '/admin',];
 
 // 验证token
 app.use((req, res, next) => {
